@@ -35,7 +35,7 @@ class CustomThumbs extends PluginAbstract
     public function install(){
 
         $db = Registry::get('db');
-        if(!CustomThumbs::tableExists($db, 'video_meta')) {
+        if(!CustomThumbs::tableExists($db, 'videos_meta')) {
             $video_query = "CREATE TABLE IF NOT EXISTS videos_meta (
                 meta_id bigint(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 video_id bigint(20) NOT NULL,
