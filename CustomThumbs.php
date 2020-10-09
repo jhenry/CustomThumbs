@@ -129,26 +129,17 @@ class CustomThumbs extends PluginAbstract
 		//if it's a supported image file
 		if(CustomThumbs::is_valid_thumbnail($file))
 		{
-            $fileService = new FileService();
-            $image_url = $fileService->getURL($file);
-
-            // If there is a thumbnail set for this video,
-            $video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
-            //if( $video_meta ) {
-
-                // and if this file is set to be the thumb for that video 
-                if($file->fileId == $video_meta->meta_value)
-                {
-                    $checked = "checked";
-                } else{
-                    $checked = "";
-                }
-                $form = '<p class="set-thumbnail"><input type="radio" name="custom_thumbnail" value="' . $file->fileId . '" ' . $checked . '> <label class="control-label custom-thumbnail" for="custom_thumbnail">Make this the thumbnail and poster image for the video:</label></p>';
-                $form .= '<p class="set-thumbnail"><img alt="Preview of uploaded image." src="' . $image_url . '"></p>';
-
-                //$form .= '<p class="delete-image"><a class="remove" href=""><span class="pull-right">Delete File</span></a></p>';
-            //}
-        }
+			// If this is the current thumbnail 
+			$video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
+			if ($file->fileId == $video_meta->meta_value) {
+				$checked = " checked";
+			} else {
+				$checked = "";
+			}
+			$form = '<div class="pt-2 custom-control custom-radio">
+			<input type="radio" id="customthumb-' . $file->fileId . '" name="custom_thumbnail" class="custom-control-input"' . $checked . '> <label class="custom-control-label" for="custom_thumbnail">Use as thumbnail/poster.</label>
+		</div>';
+		}
 		
 		echo $form;	
 	}
