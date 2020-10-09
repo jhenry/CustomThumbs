@@ -26,25 +26,25 @@ class CustomThumbs extends PluginAbstract
 	* @var string Current version of plugin
 	*/
 	public $version = '0.0.1';
-	
-    /**
-     * Performs install operations for plugin. Called when user clicks install
-     * plugin in admin panel.
-     *
-     */
-    public function install(){
 
-        $db = Registry::get('db');
-        if(!CustomThumbs::tableExists($db, 'videos_meta')) {
-            $video_query = "CREATE TABLE IF NOT EXISTS videos_meta (
+	/**
+	 * Performs install operations for plugin. Called when user clicks install
+	 * plugin in admin panel.
+	 *
+	 */
+	public function install()
+	{
+		$db = Registry::get('db');
+		if (!CustomThumbs::tableExists($db, 'videos_meta')) {
+			$video_query = "CREATE TABLE IF NOT EXISTS videos_meta (
                 meta_id bigint(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 video_id bigint(20) NOT NULL,
                 meta_key varchar(255) NOT NULL,
-                meta_value longtext NOT NULL);";	
+                meta_value longtext NOT NULL);";
 
-            $db->query($video_query);
-        }
-    }
+			$db->query($video_query);
+		}
+	}
 
     /**
      * Performs uninstall operations for plugin. Called when user clicks
@@ -80,7 +80,8 @@ class CustomThumbs extends PluginAbstract
         $css_url = $config->baseUrl . '/cc-content/plugins/CustomThumbs/style.css';
 		echo '<link href="' . $css_url . '" rel="stylesheet">';
 		
-    }
+		}
+
 
 	/**
 	* Insert video thumbnail url into  player.
@@ -133,7 +134,7 @@ class CustomThumbs extends PluginAbstract
 
             // If there is a thumbnail set for this video,
             $video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
-            if( $video_meta ) {
+            //if( $video_meta ) {
 
                 // and if this file is set to be the thumb for that video 
                 if($file->fileId == $video_meta->meta_value)
@@ -146,7 +147,7 @@ class CustomThumbs extends PluginAbstract
                 $form .= '<p class="set-thumbnail"><img alt="Preview of uploaded image." src="' . $image_url . '"></p>';
 
                 //$form .= '<p class="delete-image"><a class="remove" href=""><span class="pull-right">Delete File</span></a></p>';
-            }
+            //}
         }
 		
 		echo $form;	
@@ -267,12 +268,8 @@ class CustomThumbs extends PluginAbstract
 	* @param File $file file object 
 	*/
 	public static function is_valid_thumbnail($file) {
-		
-		//TODO: move to plugin settings
-		$valid_thumbs = array('jpg', 'gif', 'png', 'jpeg');
-		
-		return in_array($file->extension, $valid_thumbs);
-		
+		$config = Registry::get('config');
+		return in_array($file->extension, $config->acceptedImageFormats);
 	}
 
 	/**
