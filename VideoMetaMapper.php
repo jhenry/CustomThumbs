@@ -66,7 +66,7 @@ class VideoMetaMapper extends MapperAbstract
 	    $parent_key = static::PARENT_KEY;
 
         $db = Registry::get('db');
-        if (!empty($meta->meta_id)) {
+        if (isset($meta->meta_id)) {
             // Update
             $query = 'UPDATE ' . DB_PREFIX . static::TABLE . ' SET ';
             $query .= static::PARENT_KEY . ' = :' . static::PARENT_KEY . ', meta_key = :meta_key, meta_value = :meta_value';

@@ -137,7 +137,7 @@ class CustomThumbs extends PluginAbstract
 				$checked = "";
 			}
 			$form = '<div class="pt-2 custom-control custom-radio">
-			<input type="radio" id="customthumb-' . $file->fileId . '" name="custom_thumbnail" class="custom-control-input"' . $checked . '> <label class="custom-control-label" for="custom_thumbnail">Use as thumbnail/poster.</label>
+			<input type="radio" id="customthumb-' . $file->fileId . '" name="custom_thumbnail" value="' . $file->fileId . '" class="custom-control-input"' . $checked . '> <label class="custom-control-label" for="customthumb-' . $file->fileId . '">Use as thumbnail/poster.</label>
 		</div>';
 		}
 		
@@ -151,10 +151,9 @@ class CustomThumbs extends PluginAbstract
 	public static function set_custom_thumbnail() {
 		if(isset($_POST['custom_thumbnail'])){
 			$file_id = $_POST['custom_thumbnail'];		
-			$attachmentMapper = new AttachmentMapper();
-			$attachment = $attachmentMapper->getByCustom(array("file_id" => $file_id));
-			
-			CustomThumbs::update_video_meta($attachment->videoId, 'thumbnail', $file_id);
+			$videoId = $_GET['vid'];
+
+			CustomThumbs::update_video_meta($videoId, 'thumbnail', $file_id);
 		}
 	}
 
@@ -170,6 +169,11 @@ class CustomThumbs extends PluginAbstract
 		
 		include_once "VideoMeta.php";
 		$videoMeta = new \CustomThumbs\VideoMeta();
+		$videoMeta->video_id = $video_id;
+		$videoMeta->meta_key = $meta_key;
+		$videoMeta->meta_value = $meta_value;
+
+		$videoMetaMapper = CustomThumbs::get_mapper_class();
 
 		// If there's meta for this file, we want the meta id
 		$existing_meta = CustomThumbs::get_video_meta($video_id, $meta_key);
@@ -177,13 +181,6 @@ class CustomThumbs extends PluginAbstract
 			$videoMeta->meta_id = $existing_meta->meta_id;
 		}
 
-
-		$videoMeta->video_id = $video_id;
-		$videoMeta->meta_key = $meta_key;
-		$videoMeta->meta_value = $meta_value;
-		
-        $videoMetaMapper = CustomThumbs::get_mapper_class();
-		
 		$videoMetaMapper->save($videoMeta);
 		
 	}
