@@ -100,9 +100,13 @@ class CustomThumbs extends PluginAbstract
         if( $video_meta ){
             $fileMapper = new FileMapper();
             $file = $fileMapper->getById($video_meta->meta_value);
-
-            $fileService = new FileService();
-            $url = $fileService->getUrl($file);
+						if($file){
+							$fileService = new FileService();
+							$url = $fileService->getUrl($file);
+						} 
+						else {
+							$url = '';
+						}
         } else {
             $config = Registry::get('config');
             $videoMapper = new VideoMapper();
