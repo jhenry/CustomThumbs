@@ -3,28 +3,28 @@
 class CustomThumbs extends PluginAbstract
 {
 	/**
-	* @var string Name of plugin
-	*/
+	 * @var string Name of plugin
+	 */
 	public $name = 'CustomThumbs';
 
 	/**
-	* @var string Description of plugin
-	*/
+	 * @var string Description of plugin
+	 */
 	public $description = 'Choose your own thumbnail by uploading/attaching an image to a video.';
 
 	/**
-	* @var string Name of plugin author
-	*/
+	 * @var string Name of plugin author
+	 */
 	public $author = 'Justin Henry';
 
 	/**
-	* @var string URL to plugin's website
-	*/
+	 * @var string URL to plugin's website
+	 */
 	public $url = 'https://uvm.edu/~jhenry/';
 
 	/**
-	* @var string Current version of plugin
-	*/
+	 * @var string Current version of plugin
+	 */
 	public $version = '0.0.1';
 
 	/**
@@ -46,94 +46,98 @@ class CustomThumbs extends PluginAbstract
 		}
 	}
 
-    /**
-     * Performs uninstall operations for plugin. Called when user clicks
-     * uninstall plugin in admin panel and prior to files being removed.
-     *
-     */
-    public function uninstall(){
-
-        $db = Registry::get('db');
-
-        $drop_video_meta = "DROP TABLE IF EXISTS videos_meta;";
-
-        $db->query($drop_video_meta );
-    }
-
-	
 	/**
-	* Attaches plugin methods to hooks in code base
-	*/
-	public function load() {
-		Plugin::attachEvent ( 'theme.head' , array( __CLASS__ , 'load_styles' ) );
-		Plugin::attachEvent ( 'theme.head' , array( __CLASS__ , 'addMetaTag' ) );
-        Plugin::attachEvent( 'videos.edit.attachment.list' , array( __CLASS__ , 'edit_custom_thumbnail' ) );
-        Plugin::attachEvent( 'theme.thumbnail.url' , array( __CLASS__ , 'thumb_url' ) );
-        Plugin::attachEvent( 'videos_edit.start' , array( __CLASS__ , 'set_custom_thumbnail' ) );
+	 * Performs uninstall operations for plugin. Called when user clicks
+	 * uninstall plugin in admin panel and prior to files being removed.
+	 *
+	 */
+	public function uninstall()
+	{
+
+		$db = Registry::get('db');
+
+		$drop_video_meta = "DROP TABLE IF EXISTS videos_meta;";
+
+		$db->query($drop_video_meta);
+	}
+
+
+	/**
+	 * Attaches plugin methods to hooks in code base
+	 */
+	public function load()
+	{
+		Plugin::attachEvent('theme.head', array(__CLASS__, 'load_styles'));
+		Plugin::attachEvent('theme.head', array(__CLASS__, 'addMetaTag'));
+		Plugin::attachEvent('videos.edit.attachment.list', array(__CLASS__, 'edit_custom_thumbnail'));
+		Plugin::attachEvent('theme.thumbnail.url', array(__CLASS__, 'thumb_url'));
+		Plugin::attachEvent('videos_edit.start', array(__CLASS__, 'set_custom_thumbnail'));
 	}
 
 	/**
-	* Add CSS stylesheet to head
-	* 
- 	*/
-	public static function load_styles() {
-        $config = Registry::get('config'); 
-        $css_url = $config->baseUrl . '/cc-content/plugins/CustomThumbs/style.css';
+	 * Add CSS stylesheet to head
+	 * 
+	 */
+	public static function load_styles()
+	{
+		$config = Registry::get('config');
+		$css_url = $config->baseUrl . '/cc-content/plugins/CustomThumbs/style.css';
 		echo '<link href="' . $css_url . '" rel="stylesheet">';
-		
-		}
-
-  /**
-	*  Set meta tag in header to help with JS DOM building
- 	*/
-	public static function addMetaTag() {
-		echo '<meta name="customthumbs" content="true" />';
-}
+	}
 
 	/**
-	* Insert video thumbnail url into  player.
-	*
-	* @param int $video_id Id of video for which we are getting the thumb 
-	* @return string $url link to the thumb
-	*
- 	*/
-	public static function thumb_url($video_id) {
+	 *  Set meta tag in header to help with JS DOM building
+	 */
+	public static function addMetaTag()
+	{
+		echo '<meta name="customthumbs" content="true" />';
+	}
 
-        // Get file id of the thumb (or false if not set)
+	/**
+	 * Insert video thumbnail url into  player.
+	 *
+	 * @param int $video_id Id of video for which we are getting the thumb 
+	 * @return string $url link to the thumb
+	 *
+	 */
+	public static function thumb_url($video_id)
+	{
+
+		// Get file id of the thumb (or false if not set)
 		$video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
 		//$custom_thumbnail = $video_meta->meta_value;
 
-        // Get file url based on file id stored in meta
-        if( $video_meta ){
-            $fileMapper = new FileMapper();
-            $file = $fileMapper->getById($video_meta->meta_value);
-						if($file){
-							$fileService = new FileService();
-							$url = $fileService->getUrl($file);
-						} 
-						else {
-							$url = '';
-						}
-        } else {
-            $config = Registry::get('config');
-            $videoMapper = new VideoMapper();
-            $video = $videoMapper->getVideoById($video_id);
-            $url = $config->thumbUrl . "/" . $video->filename . ".jpg";
-        }
+		// Get file url based on file id stored in meta
+		if ($video_meta) {
+			$fileMapper = new FileMapper();
+			$file = $fileMapper->getById($video_meta->meta_value);
+			if ($file) {
+				$fileService = new FileService();
+				$url = $fileService->getUrl($file);
+			} else {
+				$url = '';
+			}
+		} else {
+			$config = Registry::get('config');
+			$videoMapper = new VideoMapper();
+			$video = $videoMapper->getVideoById($video_id);
+			$url = $config->thumbUrl . "/" . $video->filename . ".jpg";
+		}
 
 		echo $url;
 	}
 
 	/**
-	* Display additional form elements in the attachment list 
-	* to allow setting an image as the default thumbnail.
-	*
-	* @param int $file_id Id of file we are editing
-	* @param int $video_id Id of the video this file is attached to 
-	* @return string $link HTML form elements for thumbnail file settings.
-	*
- 	*/
-	public static function edit_custom_thumbnail($file_id, $video_id) {
+	 * Display additional form elements in the attachment list 
+	 * to allow setting an image as the default thumbnail.
+	 *
+	 * @param int $file_id Id of file we are editing
+	 * @param int $video_id Id of the video this file is attached to 
+	 * @return string $link HTML form elements for thumbnail file settings.
+	 *
+	 */
+	public static function edit_custom_thumbnail($file_id, $video_id)
+	{
 		$fileMapper = new FileMapper();
 		$file = $fileMapper->getById($file_id);
 		$form = "";
@@ -151,26 +155,26 @@ class CustomThumbs extends PluginAbstract
 					$checked = "";
 				}
 			}
-		} 
-		else {
+		} else {
 			$tooltip = ' data-toggle="tooltip" data-placement="left"  title="Cannot set new thumb until after video is saved/uploaded." tabindex="0"';
 			$disabled = ' style="pointer-events: none;" disabled';
 			$class = ' temp-custom-thumb';
 		}
-				$form = '<div class="pt-2 custom-control custom-radio' . $class . '"' . $tooltip .'>
+		$form = '<div class="pt-2 custom-control custom-radio' . $class . '"' . $tooltip . '>
 			<input type="radio" id="customthumb-' . $fileId . '" name="custom_thumbnail" value="' . $fileId . '" class="custom-control-input"' . $disabled . $checked . '> <label class="custom-control-label" for="customthumb-' . $fileId . '">Use as thumbnail/poster.</label>
 		</div>';
-		echo $form;	
+		echo $form;
 	}
 
-	
+
 	/**
-	* Set a default thumbnail image. 
-	*
-	*/
-	public static function set_custom_thumbnail() {
-		if(isset($_POST['custom_thumbnail'])){
-			$file_id = $_POST['custom_thumbnail'];		
+	 * Set a default thumbnail image. 
+	 *
+	 */
+	public static function set_custom_thumbnail()
+	{
+		if (isset($_POST['custom_thumbnail'])) {
+			$file_id = $_POST['custom_thumbnail'];
 			$videoId = $_GET['vid'];
 
 			CustomThumbs::update_video_meta($videoId, 'thumbnail', $file_id);
@@ -185,8 +189,9 @@ class CustomThumbs extends PluginAbstract
 	 * @param string $meta_value data entry being updated
 	 * 
 	 */
-	public static function update_video_meta($video_id, $meta_key, $meta_value) {
-		
+	public static function update_video_meta($video_id, $meta_key, $meta_value)
+	{
+
 		include_once "VideoMeta.php";
 		$videoMeta = new \CustomThumbs\VideoMeta();
 		$videoMeta->video_id = $video_id;
@@ -197,20 +202,20 @@ class CustomThumbs extends PluginAbstract
 
 		// If there's meta for this file, we want the meta id
 		$existing_meta = CustomThumbs::get_video_meta($video_id, $meta_key);
-		if($existing_meta){
+		if ($existing_meta) {
 			$videoMeta->meta_id = $existing_meta->meta_id;
 		}
 
 		$videoMetaMapper->save($videoMeta);
-		
 	}
-	
+
 	/**
-	* Clean up meta (i.e. video and file) entries when a subtitle is removed.
-	* Compares submitted form data against meta entries in the DB. 
-	* 
-	*/
-	public static function cleanup_deleted_meta() {
+	 * Clean up meta (i.e. video and file) entries when a subtitle is removed.
+	 * Compares submitted form data against meta entries in the DB. 
+	 * 
+	 */
+	public static function cleanup_deleted_meta()
+	{
 		$submittedAttachmentFileIds = array();
 
 		// Get a list of attachments that were posted via the video edit form
@@ -225,25 +230,23 @@ class CustomThumbs extends PluginAbstract
 			$video_id = $_GET['vid'];
 			$existing_images = CustomThumbs::get_valid_thumbnails($video_id);
 
-			foreach($existing_images as $image){
-				
+			foreach ($existing_images as $image) {
+
 				// If the item in the DB is not included in the 
 				// attachments submitted via the form, we delete it's meta records.
-				if( !in_array($image->fileId, $submittedAttachmentFileIds) ){
+				if (!in_array($image->fileId, $submittedAttachmentFileIds)) {
 
 					// And if the ID is listed as a default item for a video, clean that up too
 					$video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
-					if($image->fileId == $video_meta->meta_value){
-                        $videoMetaMapper = CustomThumbs::get_mapper_class();
+					if ($image->fileId == $video_meta->meta_value) {
+						$videoMetaMapper = CustomThumbs::get_mapper_class();
 						$videoMetaMapper->delete($video_meta->meta_id);
 					}
 				}
-
 			}
 		}
-
 	}
-	
+
 
 	/**
 	 * Get a list of all attached thumbnail image files
@@ -251,31 +254,32 @@ class CustomThumbs extends PluginAbstract
 	 * @param int $video_id Id of the video we are querying image attachments for
 	 * @return array $thumbs List of attachment objects that are valid thumbnail images 
 	 */
-	public static function get_valid_thumbnails($video_id) {
+	public static function get_valid_thumbnails($video_id)
+	{
 
 		$attachmentMapper = new AttachmentMapper();
 		$attachments = $attachmentMapper->getMultipleByCustom(array("video_id" => $video_id));
 
 		//for each attachment, if it's a valid item, put it on the stack
 		$fileMapper = new FileMapper();
-        $thumbs = array();
-		foreach($attachments as $attachment){
+		$thumbs = array();
+		foreach ($attachments as $attachment) {
 			$file = $fileMapper->getById($attachment->fileId);
-			
-			if(CustomThumbs::is_valid_thumbnail($file)){
+
+			if (CustomThumbs::is_valid_thumbnail($file)) {
 				$thumbs[] = $file;
 			}
 		}
 		return $thumbs;
-		
 	}
 
 	/**
-	* Determine if the specified file is the right type of file
-	*
-	* @param File $file file object 
-	*/
-	public static function is_valid_thumbnail($file) {
+	 * Determine if the specified file is the right type of file
+	 *
+	 * @param File $file file object 
+	 */
+	public static function is_valid_thumbnail($file)
+	{
 		$config = Registry::get('config');
 		return in_array($file->extension, $config->acceptedImageFormats);
 	}
@@ -287,12 +291,13 @@ class CustomThumbs extends PluginAbstract
 	 * @param string $meta_key reference label for the meta item to retrieve
 	 * @return false if not found 
 	 */
-		public static function get_video_meta($video_id, $meta_key) {
-            
-			$videoMetaMapper = CustomThumbs::get_mapper_class();
-			$meta = $videoMetaMapper->getByCustom( array('video_id' => $video_id, 'meta_key' => $meta_key) );	
-			return $meta;
-		}
+	public static function get_video_meta($video_id, $meta_key)
+	{
+
+		$videoMetaMapper = CustomThumbs::get_mapper_class();
+		$meta = $videoMetaMapper->getByCustom(array('video_id' => $video_id, 'meta_key' => $meta_key));
+		return $meta;
+	}
 
 	/**
 	 * Check if a table exists in the current database.
@@ -301,7 +306,8 @@ class CustomThumbs extends PluginAbstract
 	 * @param string $table Table to search for.
 	 * @return bool TRUE if table exists, FALSE if no table found.
 	 */
-	public static function tableExists($pdo, $table) {
+	public static function tableExists($pdo, $table)
+	{
 
 		// Try a select statement against the table
 		// Run it in try/catch in case PDO is in ERRMODE_EXCEPTION.
@@ -321,12 +327,11 @@ class CustomThumbs extends PluginAbstract
 	 *
 	 * @return class namespaced instance of class
 	 */
-	public static function get_mapper_class() {
+	public static function get_mapper_class()
+	{
 
-			include_once 'VideoMetaMapper.php';
-			$videoMetaMapper = new \CustomThumbs\VideoMetaMapper();	
-            return $videoMetaMapper;
-
-    }
-
+		include_once 'VideoMetaMapper.php';
+		$videoMetaMapper = new \CustomThumbs\VideoMetaMapper();
+		return $videoMetaMapper;
+	}
 }
