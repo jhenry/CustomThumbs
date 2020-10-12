@@ -66,6 +66,7 @@ class CustomThumbs extends PluginAbstract
 	*/
 	public function load() {
 		Plugin::attachEvent ( 'theme.head' , array( __CLASS__ , 'load_styles' ) );
+		Plugin::attachEvent ( 'theme.head' , array( __CLASS__ , 'addMetaTag' ) );
         Plugin::attachEvent( 'videos.edit.attachment.list' , array( __CLASS__ , 'edit_custom_thumbnail' ) );
         Plugin::attachEvent( 'theme.thumbnail.url' , array( __CLASS__ , 'thumb_url' ) );
         Plugin::attachEvent( 'videos_edit.start' , array( __CLASS__ , 'set_custom_thumbnail' ) );
@@ -82,6 +83,12 @@ class CustomThumbs extends PluginAbstract
 		
 		}
 
+  /**
+	*  Set meta tag in header to help with JS DOM building
+ 	*/
+	public static function addMetaTag() {
+		echo '<meta name="customthumbs" content="true" />';
+}
 
 	/**
 	* Insert video thumbnail url into  player.
@@ -130,23 +137,32 @@ class CustomThumbs extends PluginAbstract
 		$fileMapper = new FileMapper();
 		$file = $fileMapper->getById($file_id);
 		$form = "";
+		$disabled = "";
+		$fileId = "";
 		//if it's a supported image file
-		if(CustomThumbs::is_valid_thumbnail($file))
-		{
-			// If this is the current thumbnail 
-			$video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
-			if ($file->fileId == $video_meta->meta_value) {
-				$checked = " checked";
-			} else {
-				$checked = "";
+		if ($file) {
+			if (CustomThumbs::is_valid_thumbnail($file)) {
+				// If this is the current thumbnail 
+				$video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
+				$fileId = $file->fileId;
+				if ($fileId == $video_meta->meta_value) {
+					$checked = " checked";
+				} else {
+					$checked = "";
+				}
 			}
-			$form = '<div class="pt-2 custom-control custom-radio">
-			<input type="radio" id="customthumb-' . $file->fileId . '" name="custom_thumbnail" value="' . $file->fileId . '" class="custom-control-input"' . $checked . '> <label class="custom-control-label" for="customthumb-' . $file->fileId . '">Use as thumbnail/poster.</label>
-		</div>';
+		} 
+		else {
+			$tooltip = ' data-toggle="tooltip" data-placement="left"  title="Cannot set new thumb until after video is saved/uploaded." tabindex="0"';
+			$disabled = ' style="pointer-events: none;" disabled';
+			$class = ' temp-custom-thumb';
 		}
-		
+				$form = '<div class="pt-2 custom-control custom-radio' . $class . '"' . $tooltip .'>
+			<input type="radio" id="customthumb-' . $fileId . '" name="custom_thumbnail" value="' . $fileId . '" class="custom-control-input"' . $disabled . $checked . '> <label class="custom-control-label" for="customthumb-' . $fileId . '">Use as thumbnail/poster.</label>
+		</div>';
 		echo $form;	
 	}
+
 	
 	/**
 	* Set a default thumbnail image. 
