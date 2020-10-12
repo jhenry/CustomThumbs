@@ -72,6 +72,7 @@ class CustomThumbs extends PluginAbstract
 		Plugin::attachEvent('videos.edit.attachment.list', array(__CLASS__, 'edit_custom_thumbnail'));
 		Plugin::attachEvent('theme.thumbnail.url', array(__CLASS__, 'thumb_url'));
 		Plugin::attachEvent('videos_edit.start', array(__CLASS__, 'set_custom_thumbnail'));
+		Plugin::attachEvent('upload_info.post_encode', array(__CLASS__, 'set_custom_thumbnail'));
 	}
 
 	/**
@@ -145,25 +146,26 @@ class CustomThumbs extends PluginAbstract
 		$fileId = "";
 		//if it's a supported image file
 		if ($file) {
-			if (CustomThumbs::is_valid_thumbnail($file)) {
-				// If this is the current thumbnail 
-				$video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
-				$fileId = $file->fileId;
-				if ($fileId == $video_meta->meta_value) {
-					$checked = " checked";
-				} else {
-					$checked = "";
-				}
-			}
+			$fileId = $file->fileId;
 		} else {
 			$tooltip = ' data-toggle="tooltip" data-placement="left"  title="Cannot set new thumb until after video is saved/uploaded." tabindex="0"';
 			$disabled = ' style="pointer-events: none;" disabled';
 			$class = ' temp-custom-thumb';
 		}
-		$form = '<div class="pt-2 custom-control custom-radio' . $class . '"' . $tooltip . '>
+		if (CustomThumbs::is_valid_thumbnail($file)) {
+			// If this is the current thumbnail 
+			$video_meta = CustomThumbs::get_video_meta($video_id, 'thumbnail');
+			$existing_meta = ($video_meta) ? $video_meta->meta_value : null;
+			if ($fileId == $existing_meta) {
+				$checked = " checked";
+			} else {
+				$checked = "";
+			}
+			$form = '<div class="pt-2 custom-control custom-radio' . $class . '"' . $tooltip . '>
 			<input type="radio" id="customthumb-' . $fileId . '" name="custom_thumbnail" value="' . $fileId . '" class="custom-control-input"' . $disabled . $checked . '> <label class="custom-control-label" for="customthumb-' . $fileId . '">Use as thumbnail/poster.</label>
 		</div>';
-		echo $form;
+			echo $form;
+		}
 	}
 
 
@@ -175,11 +177,30 @@ class CustomThumbs extends PluginAbstract
 	{
 		if (isset($_POST['custom_thumbnail'])) {
 			$file_id = $_POST['custom_thumbnail'];
-			$videoId = $_GET['vid'];
+			if (isset($_GET['vid'])) {
+				$videoId = $_GET['vid'];
+			} else {
+				$file = CustomThumbs::getUploadedVideo();
+				$videoId = $file->videoId;
+			}	
 
 			CustomThumbs::update_video_meta($videoId, 'thumbnail', $file_id);
 		}
 	}
+
+	/**
+   * Get Video object based on uploaded video in _SESSION
+   * 
+   */
+  public static function getUploadedVideo()
+  {
+    $videoMapper = new VideoMapper();
+    if (isset($_SESSION['upload']->videoId)) {
+      $video_id = $_SESSION['upload']->videoId;
+      $video = $videoMapper->getVideoById($video_id);
+      return $video;
+    }
+  }
 
 	/**
 	 * Save/Create video meta entries.
