@@ -125,7 +125,7 @@ class CustomThumbs extends PluginAbstract
 			$url = $config->thumbUrl . "/" . $video->filename . ".jpg";
 		}
 
-		echo $url;
+		return $url;
 	}
 
 	/**
@@ -141,9 +141,7 @@ class CustomThumbs extends PluginAbstract
 	{
 		$fileMapper = new FileMapper();
 		$file = $fileMapper->getById($file_id);
-		$form = "";
-		$disabled = "";
-		$fileId = "";
+		$form = $disabled = $fileId = $tooltip = $disabled = $class = "";
 		//if it's a supported image file
 		if ($file) {
 			$fileId = $file->fileId;
