@@ -168,7 +168,7 @@ class CustomThumbs extends PluginAbstract
 
 
 	/**
-	 * Set a default thumbnail image. 
+	 * Set/delete/update a default thumbnail image. 
 	 *
 	 */
 	public static function set_custom_thumbnail()
@@ -183,6 +183,21 @@ class CustomThumbs extends PluginAbstract
 			}	
 
 			CustomThumbs::update_video_meta($videoId, 'thumbnail', $file_id);
+		}
+		else {
+			// If the form was submitted, but no thumbnail is 
+			// set as the default, delete the meta row
+			if($_SERVER['REQUEST_METHOD'] === 'POST'){
+				if (isset($_GET['vid'])) {
+					$videoId = $_GET['vid'];
+				} else {
+					$file = CustomThumbs::getUploadedVideo();
+					$videoId = $file->videoId;
+				}		
+				$meta = CustomThumbs::get_video_meta($videoId, 'thumbnail');
+				$videoMetaMapper = CustomThumbs::get_mapper_class();
+				$videoMetaMapper->delete($meta->meta_id);
+			}
 		}
 	}
 
@@ -229,7 +244,7 @@ class CustomThumbs extends PluginAbstract
 	}
 
 	/**
-	 * Clean up meta (i.e. video and file) entries when a subtitle is removed.
+	 * Clean up meta (i.e. video and file) entries when a thumb is removed.
 	 * Compares submitted form data against meta entries in the DB. 
 	 * 
 	 */
