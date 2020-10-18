@@ -113,16 +113,34 @@ class CustomThumbs extends PluginAbstract
 			$fileMapper = new FileMapper();
 			$file = $fileMapper->getById($video_meta->meta_value);
 			if ($file) {
-				$fileService = new FileService();
-				$url = $fileService->getUrl($file);
-			} else {
+				if (class_exists('Wowza'))
+				{	
+					$thumb_dir = Wowza::get_url_by_user_id($file->userId, 'attachments');
+					$url = $thumb_dir . $file->filename . "." . $file->extension;
+				}
+				else
+				{
+					$fileService = new FileService();
+					$url = $fileService->getUrl($file);
+				}
+			} else 
+			{
 				$url = '';
 			}
 		} else {
-			$config = Registry::get('config');
+			// This isn't a custom set thumb, so use the original generated thumb
 			$videoMapper = new VideoMapper();
 			$video = $videoMapper->getVideoById($video_id);
-			$url = $config->thumbUrl . "/" . $video->filename . ".jpg";
+			if (class_exists('Wowza'))
+			{	
+				$thumb_dir = Wowza::get_url_by_video_id($video->videoId, 'thumbs');
+				$url = $thumb_dir . $video->filename . ".jpg";
+			}
+			else
+			{
+				$config = Registry::get('config');
+				$url = $config->thumbUrl . "/" . $video->filename . ".jpg";
+			}
 		}
 
 		return $url;
