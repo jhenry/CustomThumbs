@@ -196,8 +196,8 @@ class CustomThumbs extends PluginAbstract
 			if (isset($_GET['vid'])) {
 				$videoId = $_GET['vid'];
 			} else {
-				$file = CustomThumbs::getUploadedVideo();
-				$videoId = $file->videoId;
+				$v = CustomThumbs::getUploadedVideo();
+				$videoId = $v->videoId;
 			}	
 
 			CustomThumbs::update_video_meta($videoId, 'thumbnail', $file_id);
@@ -209,12 +209,14 @@ class CustomThumbs extends PluginAbstract
 				if (isset($_GET['vid'])) {
 					$videoId = $_GET['vid'];
 				} else {
-					$file = CustomThumbs::getUploadedVideo();
-					$videoId = $file->videoId;
+					$vid = CustomThumbs::getUploadedVideo();
+					$videoId = $vid->videoId;
 				}		
 				$meta = CustomThumbs::get_video_meta($videoId, 'thumbnail');
-				$videoMetaMapper = CustomThumbs::get_mapper_class();
-				$videoMetaMapper->delete($meta->meta_id);
+				if ($meta) {
+					$videoMetaMapper = CustomThumbs::get_mapper_class();
+					$videoMetaMapper->delete($meta->meta_id);
+				}
 			}
 		}
 	}
