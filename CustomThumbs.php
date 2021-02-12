@@ -73,6 +73,8 @@ class CustomThumbs extends PluginAbstract
 		Plugin::attachEvent('theme.thumbnail.url', array(__CLASS__, 'thumb_url'));
 		Plugin::attachEvent('videos_edit.start', array(__CLASS__, 'set_custom_thumbnail'));
 		Plugin::attachEvent('upload_info.post_encode', array(__CLASS__, 'set_custom_thumbnail'));
+		Plugin::attachEvent('upload_info.post_encode', array(__CLASS__, 'setDefaultThumbOnSave'));
+		Plugin::attachEvent('videos_edit.end', array(__CLASS__, 'setDefaultThumbOnSave'));
 	}
 
 	/**
@@ -92,6 +94,23 @@ class CustomThumbs extends PluginAbstract
 	public static function addMetaTag()
 	{
 		echo '<meta name="customthumbs" content="true" />';
+	}
+
+	/**
+	 * Set a thumbnail as default when video is saved/uploaded if it's the only one.
+	 *
+	 */
+	public static function setDefaultThumbOnSave()
+	{
+		$videoId = (isset($_GET['vid'])) ? $_GET['vid'] : $_SESSION['upload']->videoId;
+		$thumbs = self::get_valid_thumbnails($videoId);
+
+		// If there is only one image attached, set it as default
+		if (sizeof($thumbs) == 1) {
+			$thumb = $thumbs[0];
+			self::update_video_meta($videoId, 'thumbnail', $thumb->fileId);
+		}
+
 	}
 
 	/**
