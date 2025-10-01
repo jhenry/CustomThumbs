@@ -354,7 +354,14 @@ class CustomThumbs extends PluginAbstract
 	public static function is_valid_thumbnail($file)
 	{
 		$config = Registry::get('config');
-		return in_array($file->extension, $config->acceptedImageFormats);
+
+        //TODO: exception handling
+        if (!($file === false)) {
+          return in_array($file->extension, $config->acceptedImageFormats);
+        }
+        else {
+          return false;
+        }
 	}
 
 	/**
